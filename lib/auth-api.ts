@@ -1,7 +1,16 @@
 import 'server-only'
-import type { AuthTokens, AuthUser, LoginCredentials, RegisterData } from './auth-types'
+import { apiFetch } from './api-client'
+import type {
+  AuthTokens,
+  LoginCredentials,
+  LoginResponseRaw,
+  RegisterData,
+} from './auth-types'
 
 const API_BASE = process.env.MERCASAVIP_API_BASE
+
+// HomeX Express es AppId 2 en MercasaVIP.Api (AppId 1 es la app de MercasaVIP).
+const APP_ID = 2
 
 export type AuthResult<T> =
   | { ok: true; data: T }
@@ -16,44 +25,29 @@ function assertApiBase(): string {
   return API_BASE
 }
 
-function mapRawToUser(raw: unknown): AuthUser {
-  // TODO(Luis): confirmar qué datos de usuario devuelve realmente la API y mapear los campos reales.
-  const obj = (raw ?? {}) as Record<string, unknown>
+function mapTokens(raw: LoginResponseRaw): AuthTokens {
   return {
-    id: String(obj.id ?? obj.userId ?? obj.accountNum ?? ''),
-    name: String(obj.name ?? obj.fullName ?? obj.userName ?? ''),
-    email: String(obj.email ?? obj.userEmail ?? ''),
-  }
-}
-
-function mapLoginResponse(raw: unknown): AuthTokens & { user: AuthUser } {
-  const obj = (raw ?? {}) as Record<string, unknown>
-  return {
-    // TODO(Luis): confirmar nombres reales de campos del access/refresh token en la respuesta del login
-    accessToken: String(obj.accessToken ?? obj.access_token ?? obj.token ?? ''),
-    refreshToken: String(obj.refreshToken ?? obj.refresh_token ?? ''),
-    user: mapRawToUser(obj.user ?? obj),
+    accessToken: raw.tokens?.Token ?? '',
+    refreshToken: raw.tokens?.RefreshToken ?? '',
   }
 }
 
 export async function login(
   credentials: LoginCredentials
-): Promise<AuthResult<AuthTokens & { user: AuthUser }>> {
+): Promise<AuthResult<AuthTokens>> {
   try {
     const base = assertApiBase()
-    // TODO(Luis): confirmar ruta exacta del endpoint de login dentro de /Authentication
-    const url = new URL('/Authentication/HE_Login', base)
+    const url = new URL('/Authentication/login_HE', base)
+    url.searchParams.set('Id', credentials.id)
+    // ⚠️ La contraseña viaja en la query string — así está expuesto el
+    // endpoint real, no es una elección nuestra. Este fetch corre siempre
+    // server-to-server desde el BFF, nunca desde el navegador del cliente,
+    // así que al menos no queda expuesta en la red del usuario final.
+    url.searchParams.set('password', credentials.password)
+    url.searchParams.set('AppId', String(APP_ID))
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials), // TODO(Luis): confirmar shape exacto del body de login
-      cache: 'no-store',
-    })
+    const res = await apiFetch(url, { method: 'GET' })
 
-    if (res.status === 401 || res.status === 400) {
-      return { ok: false, status: 401, error: 'Credenciales inválidas' }
-    }
     if (!res.ok) {
       return {
         ok: false,
@@ -62,8 +56,13 @@ export async function login(
       }
     }
 
-    const raw = await res.json()
-    return { ok: true, data: mapLoginResponse(raw) }
+    const raw = (await res.json()) as LoginResponseRaw
+
+    if (raw.result !== 'SUCCESS' || !raw.IsCorrect || !raw.tokens) {
+      return { ok: false, status: 401, error: 'Credenciales inválidas' }
+    }
+
+    return { ok: true, data: mapTokens(raw) }
   } catch (err) {
     return {
       ok: false,
@@ -75,22 +74,15 @@ export async function login(
 
 export async function register(
   data: RegisterData
-): Promise<AuthResult<{ user: AuthUser }>> {
+): Promise<AuthResult<{ message: string }>> {
   try {
     const base = assertApiBase()
-    // TODO(Luis): confirmar ruta exacta del endpoint de registro dentro de /Authentication
-    const url = new URL('/Authentication/HE_Register', base)
+    const url = new URL('/Authentication/UserRegisterHE', base)
+    url.searchParams.set('Id', data.id)
+    url.searchParams.set('password', data.password)
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data), // TODO(Luis): confirmar shape exacto del body de registro
-      cache: 'no-store',
-    })
+    const res = await apiFetch(url, { method: 'GET' })
 
-    if (res.status === 400) {
-      return { ok: false, status: 400, error: 'Datos de registro inválidos' }
-    }
     if (!res.ok) {
       return {
         ok: false,
@@ -99,9 +91,9 @@ export async function register(
       }
     }
 
-    const raw = await res.json()
-    // TODO(Luis): mapear campos reales de la respuesta de registro a AuthUser
-    return { ok: true, data: { user: mapRawToUser(raw) } }
+    // UserRegisterHE devuelve un string plano de resultado, no un objeto JSON.
+    const message = await res.text()
+    return { ok: true, data: { message } }
   } catch (err) {
     return {
       ok: false,
@@ -111,22 +103,24 @@ export async function register(
   }
 }
 
-export async function refresh(refreshToken: string): Promise<AuthResult<AuthTokens>> {
+export async function refresh(
+  customerId: string,
+  refreshToken: string
+): Promise<AuthResult<AuthTokens>> {
   try {
     const base = assertApiBase()
-    // TODO(Luis): confirmar si existe endpoint de refresh y su ruta exacta dentro de /Authentication
-    const url = new URL('/Authentication/HE_RefreshToken', base)
+    const url = new URL('/Authentication/RefreshCredentials', base)
 
-    const res = await fetch(url, {
+    const res = await apiFetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }), // TODO(Luis): confirmar nombre del campo esperado
-      cache: 'no-store',
+      body: JSON.stringify({
+        CustomerId: customerId,
+        RefreshToken: refreshToken,
+        AppId: APP_ID,
+      }),
     })
 
-    if (res.status === 401) {
-      return { ok: false, status: 401, error: 'Refresh token inválido o expirado' }
-    }
     if (!res.ok) {
       return {
         ok: false,
@@ -135,9 +129,13 @@ export async function refresh(refreshToken: string): Promise<AuthResult<AuthToke
       }
     }
 
-    const raw = await res.json()
-    const mapped = mapLoginResponse(raw)
-    return { ok: true, data: { accessToken: mapped.accessToken, refreshToken: mapped.refreshToken } }
+    const raw = (await res.json()) as LoginResponseRaw
+
+    if (!raw.IsCorrect || !raw.tokens) {
+      return { ok: false, status: 401, error: 'Refresh token inválido o expirado' }
+    }
+
+    return { ok: true, data: mapTokens(raw) }
   } catch (err) {
     return {
       ok: false,

@@ -44,11 +44,13 @@ export default function MiCuentaPage() {
             </div>
           ) : isAuthenticated && user ? (
             <div className="mt-8 rounded-2xl bg-homex-surface p-6 shadow-card">
-              {/* TODO(Luis): confirmar qué datos de usuario devuelve la API para mostrar más info aquí */}
+              {/* Datos leídos de los claims del JWT (nameid/unique_name/email), ver lib/jwt.ts */}
               <p className="text-sm text-homex-text/60">Nombre</p>
               <p className="text-lg font-semibold text-homex-blue">{user.name || '—'}</p>
               <p className="mt-4 text-sm text-homex-text/60">Email</p>
               <p className="text-lg font-semibold text-homex-blue">{user.email || '—'}</p>
+              <p className="mt-4 text-sm text-homex-text/60">Identificación</p>
+              <p className="text-lg font-semibold text-homex-blue">{user.accountNum || '—'}</p>
 
               <button
                 type="button"

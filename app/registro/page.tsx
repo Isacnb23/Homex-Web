@@ -7,15 +7,10 @@ import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
 export default function RegistroPage() {
   const router = useRouter()
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [id, setId] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -26,12 +21,8 @@ export default function RegistroPage() {
     event.preventDefault()
     setFormError(null)
 
-    if (!name.trim()) {
-      setFormError('Ingresá tu nombre.')
-      return
-    }
-    if (!isValidEmail(email)) {
-      setFormError('Ingresá un email válido.')
+    if (!id.trim()) {
+      setFormError('Ingresá tu identificación.')
       return
     }
     if (!password) {
@@ -48,7 +39,7 @@ export default function RegistroPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ id: id.trim(), password }),
       })
       const body = await res.json().catch(() => null)
 
@@ -82,28 +73,15 @@ export default function RegistroPage() {
           </p>
 
           <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
-            {/* TODO(Luis): confirmar campos exactos que pide el registro */}
             <label className="flex flex-col gap-1.5 text-sm font-medium text-homex-text">
-              Nombre
+              Identificación (cédula/VATNUM)
               <input
                 type="text"
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                autoComplete="username"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
                 className="rounded-xl border border-homex-blue/15 bg-homex-surface px-4 py-3 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
-                placeholder="Tu nombre completo"
-              />
-            </label>
-
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-homex-text">
-              Email
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="rounded-xl border border-homex-blue/15 bg-homex-surface px-4 py-3 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
-                placeholder="tu@email.com"
+                placeholder="Tu número de identificación"
               />
             </label>
 

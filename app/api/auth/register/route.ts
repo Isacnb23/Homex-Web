@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
   }
 
-  if (!data?.name || !data?.email || !data?.password) {
-    return NextResponse.json({ error: 'Nombre, email y contraseña son obligatorios' }, { status: 400 })
+  if (!data?.id || !data?.password) {
+    return NextResponse.json({ error: 'Id y contraseña son obligatorios' }, { status: 400 })
   }
 
   const result = await register(data)
@@ -21,5 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
-  return NextResponse.json({ user: result.data.user })
+  // UserRegisterHE no devuelve un usuario ni loguea automáticamente: el front
+  // debe redirigir a /login después de esto.
+  return NextResponse.json({ message: result.data.message })
 }

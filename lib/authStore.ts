@@ -6,7 +6,7 @@ import type { SessionState } from './auth-types'
 type LoginResult = { ok: true } | { ok: false; error: string }
 
 interface AuthStore extends SessionState {
-  login: (credentials: { email: string; password: string }) => Promise<LoginResult>
+  login: (credentials: { id: string; password: string }) => Promise<LoginResult>
   logout: () => Promise<void>
   fetchSession: () => Promise<void>
 }

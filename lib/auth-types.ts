@@ -1,28 +1,32 @@
 export interface LoginCredentials {
-  // TODO(Luis): confirmar campos exactos que pide el login (email? usuario? accountNum? + password). Placeholder:
-  email: string
+  id: string // VATNUM/CustomerId del cliente. NO es email.
   password: string
 }
 
 export interface RegisterData {
-  // TODO(Luis): confirmar campos exactos que pide el registro. Placeholder:
-  name: string
-  email: string
+  id: string // VATNUM/CustomerId del cliente.
   password: string
 }
 
-export interface AuthTokens {
-  // TODO(Luis): confirmar nombres reales de campos en la respuesta del login
-  accessToken: string
-  refreshToken: string
-  // posibles: expiresIn, tokenType, etc.
+// LoginResponseDto real de MercasaVIP.Api (login_HE y RefreshCredentials devuelven esta misma forma).
+export interface LoginResponseRaw {
+  tokens: { Token: string; RefreshToken: string } | null
+  result: string
+  IsCorrect: boolean
 }
 
+export interface AuthTokens {
+  // Mapeados desde tokens.Token / tokens.RefreshToken del LoginResponseDto.
+  accessToken: string
+  refreshToken: string
+}
+
+// Estos datos no vienen de un endpoint: se extraen decodificando los claims
+// del access token (JWT) en el servidor. Ver lib/jwt.ts.
 export interface AuthUser {
-  // TODO(Luis): confirmar qué datos de usuario devuelve la API
-  id: string
-  name: string
-  email: string
+  accountNum: string // claim nameid (ClaimTypes.NameIdentifier)
+  name: string // claim unique_name (ClaimTypes.Name)
+  email: string // claim email (ClaimTypes.Email)
 }
 
 export interface SessionState {

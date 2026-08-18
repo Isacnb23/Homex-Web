@@ -4,6 +4,7 @@ import { refresh } from './auth-api'
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
+  CUSTOMER_ID_COOKIE,
   authCookieOptions,
   ACCESS_TOKEN_MAX_AGE,
   REFRESH_TOKEN_MAX_AGE,
@@ -33,9 +34,10 @@ export async function fetchProtected(path: string, init: RequestInit = {}): Prom
 
   if (res.status === 401) {
     const refreshToken = store.get(REFRESH_TOKEN_COOKIE)?.value
+    const customerId = store.get(CUSTOMER_ID_COOKIE)?.value
 
-    if (refreshToken) {
-      const refreshed = await refresh(refreshToken)
+    if (refreshToken && customerId) {
+      const refreshed = await refresh(customerId, refreshToken)
 
       if (refreshed.ok) {
         accessToken = refreshed.data.accessToken

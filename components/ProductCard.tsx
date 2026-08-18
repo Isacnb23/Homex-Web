@@ -1,16 +1,36 @@
-import { ImageOff, Tag } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { Check, ImageOff, Plus, Tag } from 'lucide-react'
 import type { Product } from '@/lib/types'
+import { useCartStore } from '@/lib/cartStore'
+import { formatColones } from '@/lib/utils'
 
 export default function ProductCard({ product }: { product: Product }) {
+  const addItem = useCartStore((state) => state.addItem)
+  const [justAdded, setJustAdded] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
+  // TODO: por ahora no hay dato claro de stock/disponibilidad en Product (falta
+  // exponer AvailPhysical desde el BFF), así que el botón queda siempre activo.
+  const outOfStock = false
+
+  function handleAddToCart() {
+    addItem(product)
+    setJustAdded(true)
+    setTimeout(() => setJustAdded(false), 1200)
+  }
+
   return (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-homex-yellow/60 bg-white shadow-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-card-hover">
       <div className="relative flex h-36 items-center justify-center overflow-hidden bg-homex-surface">
-        {product.imageUrl ? (
+        {product.imageUrl && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={product.imageUrl}
             alt={product.name}
             loading="lazy"
+            onError={() => setImageError(true)}
             className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (
@@ -33,10 +53,33 @@ export default function ProductCard({ product }: { product: Product }) {
         </h3>
         <div className="mt-auto flex items-baseline justify-between pt-2">
           <span className="text-lg font-extrabold text-homex-blue">
-            ${product.price.toFixed(2)}
+            {formatColones(product.price)}
           </span>
           <span className="text-xs text-homex-text/60">/ {product.unit}</span>
         </div>
+
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={outOfStock}
+          className={`mt-3 flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
+            justAdded
+              ? 'bg-green-600 text-white'
+              : 'bg-homex-blue text-white hover:-translate-y-0.5 hover:bg-homex-blue-dark hover:shadow-button'
+          }`}
+        >
+          {justAdded ? (
+            <>
+              <Check className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+              Agregado
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+              Agregar
+            </>
+          )}
+        </button>
       </div>
     </div>
   )

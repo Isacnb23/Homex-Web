@@ -8,16 +8,12 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { useAuthStore } from '@/lib/authStore'
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
 export default function LoginPage() {
   const router = useRouter()
   const login = useAuthStore((state) => state.login)
   const isLoading = useAuthStore((state) => state.isLoading)
 
-  const [email, setEmail] = useState('')
+  const [id, setId] = useState('')
   const [password, setPassword] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -25,8 +21,8 @@ export default function LoginPage() {
     event.preventDefault()
     setFormError(null)
 
-    if (!isValidEmail(email)) {
-      setFormError('Ingresá un email válido.')
+    if (!id.trim()) {
+      setFormError('Ingresá tu identificación.')
       return
     }
     if (!password) {
@@ -34,7 +30,7 @@ export default function LoginPage() {
       return
     }
 
-    const result = await login({ email, password })
+    const result = await login({ id: id.trim(), password })
     if (!result.ok) {
       setFormError(result.error)
       return
@@ -59,16 +55,15 @@ export default function LoginPage() {
           </p>
 
           <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
-            {/* TODO(Luis): confirmar si el login usa email, usuario o accountNum + password */}
             <label className="flex flex-col gap-1.5 text-sm font-medium text-homex-text">
-              Email
+              Identificación (cédula/VATNUM)
               <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                autoComplete="username"
+                value={id}
+                onChange={(e) => setId(e.target.value)}
                 className="rounded-xl border border-homex-blue/15 bg-homex-surface px-4 py-3 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
-                placeholder="tu@email.com"
+                placeholder="Tu número de identificación"
               />
             </label>
 

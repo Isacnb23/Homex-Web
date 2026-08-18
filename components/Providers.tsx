@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from '@/lib/authStore'
+import { useCartStore } from '@/lib/cartStore'
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
@@ -10,6 +11,7 @@ export default function Providers({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchSession()
+    useCartStore.persist.rehydrate()
   }, [fetchSession])
 
   return (

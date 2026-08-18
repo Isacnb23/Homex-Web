@@ -36,10 +36,8 @@ export interface Product {
   site: string // SiteName
 }
 
-// Familia/categoría cruda que devuelve HE_GetFamilies (estructura exacta pendiente de confirmar con Luis)
-export interface HE_FamilyRaw {
-  [key: string]: unknown
-}
+// HE_GetFamilies devuelve un array de strings (nombres de familia), no objetos.
+export type HE_FamilyRaw = string
 
 export interface Category {
   id: string
@@ -48,4 +46,9 @@ export interface Category {
 
 export interface ApiErrorResponse {
   error: string
+}
+
+export interface CartItem {
+  product: Product
+  quantity: number
 }

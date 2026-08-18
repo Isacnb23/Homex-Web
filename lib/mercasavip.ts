@@ -1,11 +1,11 @@
 import 'server-only'
+import { apiFetch } from './api-client'
 import type { HE_FamilyRaw, HE_InventItemRaw, Product, Category } from './types'
 
 const API_BASE = process.env.MERCASAVIP_API_BASE
 
-// TODO: Luis todavía no nos dio el PriceList real de HomeX. Usamos un
-// placeholder leído de env hasta que lo tengamos.
-const TEST_PRICELIST = process.env.MERCASAVIP_TEST_PRICELIST ?? 'PENDIENTE_PRICELIST'
+// PriceList/PriceGroup real de HomeX (AF), confirmado viendo el sitio oficial.
+const PRICE_LIST = process.env.MERCASAVIP_TEST_PRICELIST ?? 'AF'
 
 export type MercasaVipResult<T> =
   | { ok: true; data: T }
@@ -28,7 +28,7 @@ async function fetchFromMercasaVip<T>(path: string, params: Record<string, strin
       url.searchParams.set(key, value)
     }
 
-    const res = await fetch(url, { cache: 'no-store' })
+    const res = await apiFetch(url)
 
     if (!res.ok) {
       return {
@@ -47,27 +47,45 @@ async function fetchFromMercasaVip<T>(path: string, params: Record<string, strin
   }
 }
 
-// TODO: AddressId real todavía no lo tenemos de Luis.
 export async function getFamilies(
-  addressId = 'PENDIENTE_ADDRESSID'
+  addressId = '-1'
 ): Promise<MercasaVipResult<HE_FamilyRaw[]>> {
   return fetchFromMercasaVip<HE_FamilyRaw[]>('/Inventory/HE_GetFamilies', {
-    PriceList: TEST_PRICELIST,
+    PriceList: PRICE_LIST,
     AddressId: addressId,
   })
 }
 
+// HE_GetInventoryItems pide un ItemId puntual (400 si falta) — sirve para
+// buscar/consultar un producto específico, no para listar el catálogo entero.
 export async function getInventoryItems(
-  itemId = ''
+  itemId: string
 ): Promise<MercasaVipResult<HE_InventItemRaw[]>> {
   return fetchFromMercasaVip<HE_InventItemRaw[]>('/Inventory/HE_GetInventoryItems', {
-    PriceList: TEST_PRICELIST,
+    PriceList: PRICE_LIST,
     ItemId: itemId,
   })
 }
 
+// Endpoint real que usa el sitio oficial para listar el catálogo de HomeX.
+// AccountNum es opcional (confirmado: sin él igual devuelve 200 con precios de
+// lista); cuando el usuario está logueado se lo pasamos para precios
+// personalizados por cuenta. // TODO(sync): revisar si con AccountNum de un
+// cliente real la API devuelve precios/promos distintos a los de lista.
+export async function getInventoryItemsFMCM(
+  accountNum?: string,
+  addressId = '-1'
+): Promise<MercasaVipResult<HE_InventItemRaw[]>> {
+  return fetchFromMercasaVip<HE_InventItemRaw[]>('/Inventory/HE_GetInventoryItemsFMCM', {
+    PriceGroup: PRICE_LIST,
+    AddressId: addressId,
+    ...(accountNum ? { AccountNum: accountNum } : {}),
+  })
+}
+
 export function toProduct(raw: HE_InventItemRaw): Product {
-  const price = Number.parseFloat(raw.Amount)
+  // El Amount viene con coma como separador decimal, ej. "1534,6500000000000000".
+  const price = Number.parseFloat(raw.Amount.replace(',', '.'))
 
   return {
     id: raw.ItemId,
@@ -76,15 +94,31 @@ export function toProduct(raw: HE_InventItemRaw): Product {
     unit: raw.UnitId,
     category: raw.Hierarchy1,
     inPromo: raw.InPromo === 1,
-    imageUrl: null, // TODO: pendiente resolver URLs de imágenes con Luis
+    // Proxeado por nuestro BFF: la imagen real vive en HTTP plano (mixed
+    // content si se pide directo desde un sitio HTTPS). Ver app/api/images/[itemId].
+    imageUrl: `/api/images/${encodeURIComponent(raw.ItemId)}`,
     site: raw.SiteName,
   }
 }
 
-// Estructura exacta de HE_FamilyRaw pendiente de confirmar con Luis; por
-// ahora normalizamos de forma defensiva a { id, name }.
 export function toCategory(raw: HE_FamilyRaw): Category {
-  const id = String(raw.Hierarchy1 ?? raw.id ?? raw.ItemGroupId ?? '')
-  const name = String(raw.Hierarchy1 ?? raw.name ?? raw.ItemGroupId ?? '')
-  return { id, name }
+  return { id: raw, name: raw }
+}
+
+// HE_GetInventoryItemsFMCM devuelve una fila por combinación item+sucursal,
+// así que el mismo ItemId aparece repetido una vez por cada sitio con stock.
+// Para el catálogo (no filtrado por sucursal) nos quedamos con la primera
+// aparición de cada ItemId. // TODO: cuando haya selección de sucursal, usar
+// AddressId/InventSiteId real en vez de deduplicar a ciegas.
+export function toProducts(raw: HE_InventItemRaw[]): Product[] {
+  const seen = new Set<string>()
+  const products: Product[] = []
+
+  for (const item of raw) {
+    if (seen.has(item.ItemId)) continue
+    seen.add(item.ItemId)
+    products.push(toProduct(item))
+  }
+
+  return products
 }

@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { MapPin, Menu, User, X } from 'lucide-react'
+import { MapPin, Menu, ShoppingCart, User, X } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
+import { selectTotalItems, useCartStore } from '@/lib/cartStore'
+import CartDrawer from '@/components/CartDrawer'
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -16,10 +18,12 @@ const navLinks = [
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const router = useRouter()
   const user = useAuthStore((state) => state.user)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const logout = useAuthStore((state) => state.logout)
+  const totalItems = useCartStore(selectTotalItems)
 
   async function handleLogout() {
     await logout()
@@ -88,21 +92,51 @@ export default function Navbar() {
             Iniciar sesión
           </Link>
         )}
+
+        <button
+          type="button"
+          onClick={() => setIsCartOpen(true)}
+          aria-label="Abrir carrito"
+          className="relative flex items-center justify-center rounded-full p-2 text-white hover:text-homex-yellow"
+        >
+          <ShoppingCart className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+          {totalItems > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-homex-yellow px-1 text-[11px] font-bold text-homex-blue-dark">
+              {totalItems}
+            </span>
+          )}
+        </button>
       </div>
 
-      <button
-        type="button"
-        className="flex items-center justify-center rounded-md p-2 text-white lg:hidden"
-        aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-        aria-expanded={isMenuOpen}
-        onClick={() => setIsMenuOpen((open) => !open)}
-      >
-        {isMenuOpen ? (
-          <X className="h-7 w-7" aria-hidden="true" />
-        ) : (
-          <Menu className="h-7 w-7" aria-hidden="true" />
-        )}
-      </button>
+      <div className="flex items-center gap-1 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setIsCartOpen(true)}
+          aria-label="Abrir carrito"
+          className="relative flex items-center justify-center rounded-full p-2 text-white"
+        >
+          <ShoppingCart className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+          {totalItems > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-homex-yellow px-1 text-[11px] font-bold text-homex-blue-dark">
+              {totalItems}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className="flex items-center justify-center rounded-md p-2 text-white"
+          aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          {isMenuOpen ? (
+            <X className="h-7 w-7" aria-hidden="true" />
+          ) : (
+            <Menu className="h-7 w-7" aria-hidden="true" />
+          )}
+        </button>
+      </div>
 
       {isMenuOpen && (
         <div className="absolute left-0 right-0 top-full mx-4 flex flex-col gap-1 rounded-2xl bg-homex-blue-dark/95 p-4 shadow-card-hover backdrop-blur lg:hidden">
@@ -154,6 +188,8 @@ export default function Navbar() {
           )}
         </div>
       )}
+
+      <CartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   )
 }

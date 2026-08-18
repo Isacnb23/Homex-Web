@@ -4,6 +4,7 @@ import { refresh } from '@/lib/auth-api'
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
+  CUSTOMER_ID_COOKIE,
   authCookieOptions,
   ACCESS_TOKEN_MAX_AGE,
   REFRESH_TOKEN_MAX_AGE,
@@ -12,16 +13,18 @@ import {
 export async function POST() {
   const store = await cookies()
   const refreshToken = store.get(REFRESH_TOKEN_COOKIE)?.value
+  const customerId = store.get(CUSTOMER_ID_COOKIE)?.value
 
-  if (!refreshToken) {
+  if (!refreshToken || !customerId) {
     return NextResponse.json({ error: 'No hay refresh token' }, { status: 401 })
   }
 
-  const result = await refresh(refreshToken)
+  const result = await refresh(customerId, refreshToken)
 
   if (!result.ok) {
     store.delete(ACCESS_TOKEN_COOKIE)
     store.delete(REFRESH_TOKEN_COOKIE)
+    store.delete(CUSTOMER_ID_COOKIE)
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
