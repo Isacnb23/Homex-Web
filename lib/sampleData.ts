@@ -1,0 +1,75 @@
+import type { Category, Product } from './types'
+
+// Datos de ejemplo para poder ver la UI del catálogo mientras no tenemos
+// el PriceList real de Luis (ver TODOs en lib/mercasavip.ts).
+export const sampleCategories: Category[] = [
+  { id: 'frutas-verduras', name: 'Frutas y Verduras' },
+  { id: 'carnes', name: 'Carnes' },
+  { id: 'lacteos', name: 'Lácteos' },
+  { id: 'panaderia', name: 'Panadería' },
+  { id: 'bebidas', name: 'Bebidas' },
+  { id: 'limpieza', name: 'Limpieza' },
+]
+
+export const sampleProducts: Product[] = [
+  {
+    id: 'demo-1',
+    name: 'Tomate por libra',
+    price: 0.85,
+    unit: 'lb',
+    category: 'Frutas y Verduras',
+    inPromo: true,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+  {
+    id: 'demo-2',
+    name: 'Pechuga de pollo',
+    price: 2.4,
+    unit: 'lb',
+    category: 'Carnes',
+    inPromo: false,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+  {
+    id: 'demo-3',
+    name: 'Leche entera 1L',
+    price: 1.1,
+    unit: 'un',
+    category: 'Lácteos',
+    inPromo: false,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+  {
+    id: 'demo-4',
+    name: 'Pan francés',
+    price: 0.15,
+    unit: 'un',
+    category: 'Panadería',
+    inPromo: true,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+  {
+    id: 'demo-5',
+    name: 'Agua embotellada 500ml',
+    price: 0.5,
+    unit: 'un',
+    category: 'Bebidas',
+    inPromo: false,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+  {
+    id: 'demo-6',
+    name: 'Detergente líquido',
+    price: 3.75,
+    unit: 'un',
+    category: 'Limpieza',
+    inPromo: false,
+    imageUrl: null,
+    site: 'HomeX Central',
+  },
+]
