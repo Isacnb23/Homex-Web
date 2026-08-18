@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { MapPin, Menu, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { MapPin, Menu, User, X } from 'lucide-react'
+import { useAuthStore } from '@/lib/authStore'
 
 const navLinks = [
   { label: 'Inicio', href: '/' },
@@ -14,6 +16,16 @@ const navLinks = [
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const router = useRouter()
+  const user = useAuthStore((state) => state.user)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const logout = useAuthStore((state) => state.logout)
+
+  async function handleLogout() {
+    await logout()
+    setIsMenuOpen(false)
+    router.push('/')
+  }
 
   return (
     <header className="relative z-20 mx-auto flex w-full max-w-[1400px] items-center justify-between px-5 py-5 md:px-8 lg:px-16">
@@ -42,13 +54,41 @@ export default function Navbar() {
         ))}
       </nav>
 
-      <Link
-        href="/#sucursales"
-        className="hidden items-center gap-2 rounded-full bg-homex-yellow px-5 py-2.5 text-sm font-semibold text-homex-blue-dark transition-all duration-300 hover:-translate-y-0.5 hover:bg-homex-yellow-dark hover:shadow-button lg:flex"
-      >
-        <MapPin className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-        Encontrá tu sucursal
-      </Link>
+      <div className="hidden items-center gap-5 lg:flex">
+        <Link
+          href="/#sucursales"
+          className="flex items-center gap-2 rounded-full bg-homex-yellow px-5 py-2.5 text-sm font-semibold text-homex-blue-dark transition-all duration-300 hover:-translate-y-0.5 hover:bg-homex-yellow-dark hover:shadow-button"
+        >
+          <MapPin className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+          Encontrá tu sucursal
+        </Link>
+
+        {isAuthenticated ? (
+          <div className="flex items-center gap-3">
+            <Link
+              href="/mi-cuenta"
+              className="flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-homex-yellow"
+            >
+              <User className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+              {user?.name || 'Mi cuenta'}
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-sm font-semibold text-white/70 hover:text-homex-yellow"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="text-sm font-semibold text-white hover:text-homex-yellow"
+          >
+            Iniciar sesión
+          </Link>
+        )}
+      </div>
 
       <button
         type="button"
@@ -84,6 +124,34 @@ export default function Navbar() {
             <MapPin className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
             Encontrá tu sucursal
           </Link>
+
+          {isAuthenticated ? (
+            <>
+              <Link
+                href="/mi-cuenta"
+                onClick={() => setIsMenuOpen(false)}
+                className="mt-2 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white/90 hover:bg-white/10"
+              >
+                <User className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+                {user?.name || 'Mi cuenta'}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg px-4 py-3 text-left text-sm font-medium text-white/90 hover:bg-white/10"
+              >
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setIsMenuOpen(false)}
+              className="mt-2 rounded-lg px-4 py-3 text-sm font-medium text-white/90 hover:bg-white/10"
+            >
+              Iniciar sesión
+            </Link>
+          )}
         </div>
       )}
     </header>
