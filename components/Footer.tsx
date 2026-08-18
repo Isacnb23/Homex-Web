@@ -58,7 +58,7 @@ export default function Footer() {
               key={name}
               href={href}
               aria-label={name}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-homex-yellow text-homex-blue-dark transition-all duration-300 hover:-translate-y-0.5 hover:bg-homex-yellow-dark hover:shadow-button"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-homex-yellow text-homex-blue-dark transition-all duration-300 hover:-translate-y-0.5 hover:bg-homex-yellow-dark hover:shadow-button"
             >
               <Icon className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
             </a>

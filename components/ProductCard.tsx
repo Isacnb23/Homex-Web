@@ -62,7 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           type="button"
           onClick={handleAddToCart}
           disabled={outOfStock}
-          className={`mt-3 flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-homex-blue focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`mt-3 flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-homex-blue focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             justAdded
               ? 'bg-green-600 text-white'
               : 'bg-homex-blue text-white hover:-translate-y-0.5 hover:bg-homex-blue-dark hover:shadow-button'

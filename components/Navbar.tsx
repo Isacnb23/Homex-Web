@@ -108,16 +108,16 @@ export default function Navbar() {
         </button>
       </div>
 
-      <div className="flex items-center gap-1 lg:hidden">
+      <div className="flex items-center lg:hidden">
         <button
           type="button"
           onClick={() => setIsCartOpen(true)}
           aria-label="Abrir carrito"
-          className="relative flex items-center justify-center rounded-full p-2 text-white"
+          className="relative flex min-h-11 min-w-11 items-center justify-center rounded-full text-white"
         >
           <ShoppingCart className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
           {totalItems > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-homex-yellow px-1 text-[11px] font-bold text-homex-blue-dark">
+            <span className="absolute right-1 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-homex-yellow px-1 text-[11px] font-bold text-homex-blue-dark">
               {totalItems}
             </span>
           )}
@@ -125,7 +125,7 @@ export default function Navbar() {
 
         <button
           type="button"
-          className="flex items-center justify-center rounded-md p-2 text-white"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-white"
           aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={isMenuOpen}
           onClick={() => setIsMenuOpen((open) => !open)}

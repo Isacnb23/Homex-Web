@@ -139,7 +139,13 @@ export default function CatalogoPage() {
           )}
 
           <div className="sticky top-0 z-10 -mx-5 mt-6 border-b border-homex-surface bg-white/95 px-5 py-4 backdrop-blur md:-mx-8 md:px-8 lg:-mx-16 lg:px-16">
-            <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+            <div
+              className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to right, black 92%, transparent 100%)',
+                maskImage: 'linear-gradient(to right, black 92%, transparent 100%)',
+              }}
+            >
               <CategoryCard
                 category={{ id: ALL_CATEGORIES, name: 'Todas' }}
                 selected={category === ALL_CATEGORIES}
@@ -167,7 +173,7 @@ export default function CatalogoPage() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Buscar productos..."
-                  className="w-full rounded-full border border-homex-blue/15 bg-homex-surface py-2.5 pl-10 pr-4 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
+                  className="min-h-11 w-full rounded-full border border-homex-blue/15 bg-homex-surface py-2.5 pl-10 pr-4 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
                 />
               </label>
 
@@ -176,7 +182,7 @@ export default function CatalogoPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as ProductSort | '')}
-                  className="rounded-full border border-homex-blue/15 bg-homex-surface px-4 py-2.5 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue"
+                  className="min-h-11 w-full rounded-full border border-homex-blue/15 bg-homex-surface px-4 py-2.5 text-sm text-homex-text outline-none transition-colors focus:border-homex-blue sm:w-auto"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>

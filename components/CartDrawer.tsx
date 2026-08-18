@@ -64,7 +64,7 @@ export default function CartDrawer({
             type="button"
             onClick={onClose}
             aria-label="Cerrar carrito"
-            className="rounded-md p-1.5 text-homex-text/60 hover:bg-homex-surface hover:text-homex-text"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-homex-text/60 hover:bg-homex-surface hover:text-homex-text"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -98,16 +98,18 @@ export default function CartDrawer({
                       {formatColones(item.product.price)} / {item.product.unit}
                     </p>
 
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() =>
                           updateQuantity(item.product.id, item.quantity - 1)
                         }
                         aria-label="Restar cantidad"
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-homex-blue/30 text-homex-blue hover:bg-homex-surface"
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-homex-blue hover:bg-homex-surface"
                       >
-                        <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-homex-blue/30">
+                          <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                        </span>
                       </button>
                       <span className="w-6 text-center text-sm font-semibold">
                         {item.quantity}
@@ -118,14 +120,16 @@ export default function CartDrawer({
                           updateQuantity(item.product.id, item.quantity + 1)
                         }
                         aria-label="Sumar cantidad"
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-homex-blue/30 text-homex-blue hover:bg-homex-surface"
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-homex-blue hover:bg-homex-surface"
                       >
-                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-homex-blue/30">
+                          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        </span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col items-end gap-1">
                     <span className="text-sm font-bold text-homex-blue">
                       {formatColones(item.product.price * item.quantity)}
                     </span>
@@ -133,7 +137,7 @@ export default function CartDrawer({
                       type="button"
                       onClick={() => removeItem(item.product.id)}
                       aria-label="Quitar producto"
-                      className="text-homex-text/40 hover:text-red-600"
+                      className="flex min-h-11 min-w-11 items-center justify-center text-homex-text/40 hover:text-red-600"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
