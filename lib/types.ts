@@ -52,3 +52,15 @@ export interface CartItem {
   product: Product
   quantity: number
 }
+
+export type ProductSort = 'price_asc' | 'price_desc' | 'name_asc'
+
+// Respuesta paginada de /api/productos: el servidor filtra/ordena/pagina, el
+// navegador solo recibe la tanda pedida (nunca el catálogo completo).
+export interface ProductsResponse {
+  products: Product[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}

@@ -22,7 +22,7 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-homex-yellow/60 bg-white shadow-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-card-hover">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-homex-yellow/60 bg-white shadow-card transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover">
       <div className="relative flex h-36 items-center justify-center overflow-hidden bg-homex-surface">
         {product.imageUrl && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -48,7 +48,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-homex-blue/70">
           {product.category}
         </span>
-        <h3 className="text-sm font-semibold leading-snug text-homex-text">
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-homex-text">
           {product.name}
         </h3>
         <div className="mt-auto flex items-baseline justify-between pt-2">
@@ -62,7 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           type="button"
           onClick={handleAddToCart}
           disabled={outOfStock}
-          className={`mt-3 flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`mt-3 flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-homex-blue focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             justAdded
               ? 'bg-green-600 text-white'
               : 'bg-homex-blue text-white hover:-translate-y-0.5 hover:bg-homex-blue-dark hover:shadow-button'
