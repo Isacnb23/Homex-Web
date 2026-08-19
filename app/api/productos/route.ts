@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const search = params.get('search')?.trim().toLowerCase() || undefined
   const sortParam = params.get('sort')
   const sort = SORTS.includes(sortParam as ProductSort) ? (sortParam as ProductSort) : undefined
+  const onlyPromo = params.get('promo') === 'true'
 
   const page = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1)
   const pageSize = Math.min(
@@ -32,6 +33,10 @@ export async function GET(request: NextRequest) {
   }
 
   let productos = result.data
+
+  if (onlyPromo) {
+    productos = productos.filter((p) => p.inPromo)
+  }
 
   if (search) {
     productos = productos.filter((p) => p.name.toLowerCase().includes(search))

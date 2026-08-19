@@ -41,7 +41,7 @@ export default function Hero() {
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
-                href="/catalogo"
+                href="/ofertas"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-homex-yellow px-7 py-3.5 text-sm font-semibold text-homex-blue-dark transition-all duration-300 hover:-translate-y-0.5 hover:bg-homex-yellow-dark hover:shadow-button"
               >
                 <Tag className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />

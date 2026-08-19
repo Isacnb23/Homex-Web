@@ -11,7 +11,7 @@ import CartDrawer from '@/components/CartDrawer'
 const navLinks = [
   { label: 'Inicio', href: '/' },
   { label: 'Catálogo', href: '/catalogo' },
-  { label: 'Ofertas', href: '/#ofertas' },
+    { label: 'Ofertas', href: '/ofertas' },
   { label: 'Sucursales', href: '/#sucursales' },
   { label: 'Contacto', href: '/#footer' },
 ]
