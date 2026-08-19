@@ -6,14 +6,13 @@ import BenefitsBand from '@/components/BenefitsBand'
 import CategoryTile from '@/components/CategoryTile'
 import ProductCard from '@/components/ProductCard'
 import Reveal from '@/components/Reveal'
+import BranchesMapWithList from '@/components/BranchesMapWithList'
 import { getCatalog, getFamilies, toCategory } from '@/lib/mercasavip'
 import { sampleCategories, sampleProducts } from '@/lib/sampleData'
 import type { Category, Product } from '@/lib/types'
 
 const FEATURED_LIMIT = 8
 
-// Prioriza los productos en promoción; completa el resto con el resto del
-// catálogo para que la sección nunca se vea vacía o desbalanceada.
 function pickFeatured(products: Product[], limit: number): Product[] {
   const promo = products.filter((p) => p.inPromo)
   const rest = products.filter((p) => !p.inPromo)
@@ -98,6 +97,10 @@ export default async function HomePage() {
         <section id="sucursales" className="py-16 lg:py-20">
           <div className="mx-auto flex w-full max-w-[1400px] flex-col items-center gap-8 px-5 text-center md:px-8 lg:px-16">
             <Reveal className="flex w-full flex-col items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-homex-yellow px-3 py-1 text-xs font-bold uppercase tracking-wide text-homex-blue-dark">
+                <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
+                Nuestras sucursales
+              </span>
               <h2 className="text-2xl font-bold tracking-tight text-homex-blue sm:text-3xl">
                 Estamos cerca de vos
               </h2>
@@ -106,18 +109,8 @@ export default async function HomePage() {
               </p>
             </Reveal>
 
-            <Reveal className="w-full max-w-2xl" delay={100}>
-              <Link
-                href="/sucursales"
-                className="group flex flex-col items-center gap-5 rounded-2xl border border-homex-yellow/60 bg-homex-surface p-10 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-homex-blue focus-visible:ring-offset-2 sm:p-14"
-              >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-homex-blue text-white transition-colors duration-300 group-hover:bg-homex-yellow group-hover:text-homex-blue-dark">
-                  <MapPin className="h-8 w-8" strokeWidth={2} aria-hidden="true" />
-                </span>
-                <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-homex-blue px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 group-hover:bg-homex-blue-dark">
-                  Ver mapa de sucursales
-                </span>
-              </Link>
+            <Reveal className="w-full" delay={100}>
+              <BranchesMapWithList showCta />
             </Reveal>
           </div>
         </section>
