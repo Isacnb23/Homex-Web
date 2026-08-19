@@ -1,6 +1,7 @@
 import 'server-only'
 import { apiFetch } from './api-client'
-import type { HE_FamilyRaw, HE_InventItemRaw, Product, Category } from './types'
+import { BRANCH_COORDS } from './branches-coords'
+import type { HE_FamilyRaw, HE_InventItemRaw, HE_SiteRaw, Product, Category, Branch } from './types'
 
 const API_BASE = process.env.MERCASAVIP_API_BASE
 
@@ -149,6 +150,25 @@ export function toProduct(raw: HE_InventItemRaw): Product {
 
 export function toCategory(raw: HE_FamilyRaw): Category {
   return { id: raw, name: raw }
+}
+
+// HE_GetActiveFMCMSites: público, sin parámetros (confirmado 200 sin
+// PriceList/AddressId), devuelve las sucursales ACTIVAS. No trae coordenadas
+// (ver lib/branches-coords.ts para el emparejamiento).
+export async function getActiveSites(): Promise<MercasaVipResult<HE_SiteRaw[]>> {
+  return cached('sites', () =>
+    fetchFromMercasaVip<HE_SiteRaw[]>('/Inventory/HE_GetActiveFMCMSites', {})
+  )
+}
+
+export function toBranch(raw: HE_SiteRaw): Branch {
+  const coords = BRANCH_COORDS[raw.InventSiteId]
+  return {
+    id: raw.InventSiteId,
+    name: coords?.name ?? raw.Description,
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+  }
 }
 
 // HE_GetInventoryItemsFMCM/ByFamily devuelven una fila por combinación

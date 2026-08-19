@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Loader2, PackageSearch, Search, X } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -62,7 +63,21 @@ function countLabel(total: number, category: string, search: string): string {
   return `${total} producto${total === 1 ? '' : 's'}`
 }
 
-export default function CatalogoPage() {
+// Aislado en su propio boundary de Suspense (requisito de useSearchParams) para
+// que los hooks de datos de CatalogoContent nunca queden dentro de un
+// Suspense — así no se remontan si React vuelve a montar este lector.
+function CategoryFromUrl({ onCategory }: { onCategory: (value: string) => void }) {
+  const searchParams = useSearchParams()
+  const category = searchParams.get('categoria')
+
+  useEffect(() => {
+    if (category) onCategory(category)
+  }, [category, onCategory])
+
+  return null
+}
+
+function CatalogoContent() {
   const [category, setCategory] = useState(ALL_CATEGORIES)
   const [searchInput, setSearchInput] = useState('')
   const [sort, setSort] = useState<ProductSort | ''>('')
@@ -114,6 +129,10 @@ export default function CatalogoPage() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <CategoryFromUrl onCategory={setCategory} />
+      </Suspense>
+
       <div className="bg-homex-blue">
         <Navbar />
       </div>
@@ -259,4 +278,8 @@ export default function CatalogoPage() {
       <Footer />
     </>
   )
+}
+
+export default function CatalogoPage() {
+  return <CatalogoContent />
 }

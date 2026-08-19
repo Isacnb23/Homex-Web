@@ -1,0 +1,36 @@
+[33mcommit f9aa904d2326942e41a93a728a1f2a61c0757391[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Isaac Navarro <157438923+Isacnb23@users.noreply.github.com>
+Date:   Tue Aug 18 10:56:35 2026 -0600
+
+    Autenticacion
+
+ app/api/auth/login/route.ts      |  20 [32m+++[m[31m--[m
+ app/api/auth/logout/route.ts     |   4 [32m+[m[31m-[m
+ app/api/auth/refresh/route.ts    |   7 [32m+[m[31m-[m
+ app/api/auth/register/route.ts   |   8 [32m+[m[31m-[m
+ app/api/images/[itemId]/route.ts |  39 [32m+++++++++[m
+ app/api/productos/route.ts       |  17 [32m++[m[31m--[m
+ app/carrito/page.tsx             | 128 [32m++++++++++++++++++++++++++++++[m
+ app/login/page.tsx               |  25 [32m+++[m[31m---[m
+ app/mi-cuenta/page.tsx           |   4 [32m+[m[31m-[m
+ app/registro/page.tsx            |  40 [32m+++[m[31m-------[m
+ components/CartDrawer.tsx        | 165 [32m+++++++++++++++++++++++++++++++++++++++[m
+ components/Navbar.tsx            |  64 [32m+++++++++++[m[31m----[m
+ components/ProductCard.tsx       |  49 [32m+++++++++++[m[31m-[m
+ components/Providers.tsx         |   2 [32m+[m
+ conectar-auth-real.md            |  82 [32m+++++++++++++++++++[m
+ fase3-carrito-homex.md           |  69 [32m++++++++++++++++[m
+ fix-apikey-catalogo.md           |  65 [32m+++++++++++++++[m
+ lib/api-client.ts                |  21 [32m+++++[m
+ lib/auth-api.ts                  | 114 [32m+++++++++++++[m[31m--------------[m
+ lib/auth-cookies.ts              |   5 [32m+[m[31m-[m
+ lib/auth-fetch.ts                |   6 [32m+[m[31m-[m
+ lib/auth-types.ts                |  26 [32m+++[m[31m---[m
+ lib/authStore.ts                 |   2 [32m+[m[31m-[m
+ lib/cartStore.ts                 |  85 [32m++++++++++++++++++++[m
+ lib/jwt.ts                       |  33 [32m++++++++[m
+ lib/mercasavip.ts                |  66 [32m++++++++++++[m[31m----[m
+ lib/session.ts                   |  17 [32m+[m[31m---[m
+ lib/types.ts                     |  11 [32m++[m[31m-[m
+ lib/utils.ts                     |   6 [32m++[m
+ 29 files changed, 992 insertions(+), 188 deletions(-)

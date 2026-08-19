@@ -64,3 +64,21 @@ export interface ProductsResponse {
   pageSize: number
   totalPages: number
 }
+
+// HE_GetActiveFMCMSites: sucursales activas. No trae coordenadas.
+export interface HE_SiteRaw {
+  InventSiteId: string
+  InventLocationId: string
+  Description: string
+  Name: string
+}
+
+// Modelo limpio para /api/sucursales: sucursal del endpoint + coordenada
+// emparejada desde lib/branches-coords.ts. lat/lng quedan en null cuando la
+// sucursal está activa pero todavía no tenemos su coordenada real.
+export interface Branch {
+  id: string // InventSiteId
+  name: string
+  lat: number | null
+  lng: number | null
+}
