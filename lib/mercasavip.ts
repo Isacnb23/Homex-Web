@@ -51,7 +51,7 @@ async function fetchFromMercasaVip<T>(path: string, params: Record<string, strin
 // Cache en memoria (proceso del server) para no volver a pedirle a
 // MercasaVIP.Api el catálogo completo (~4.5MB) en cada paginación/búsqueda.
 // Vive mientras viva el proceso de Next; se vence solo por TTL.
-const CACHE_TTL_MS = 5 * 60 * 1000
+const CACHE_TTL_MS = 15 * 60 * 1000
 const cache = new Map<string, { data: unknown; expiresAt: number }>()
 
 async function cached<T>(key: string, fetcher: () => Promise<MercasaVipResult<T>>): Promise<MercasaVipResult<T>> {
@@ -189,9 +189,20 @@ export function toProducts(raw: HE_InventItemRaw[]): Product[] {
   return products
 }
 
-// Punto único que usa la ruta /api/productos. Trae el catálogo completo de
-// FMCM (cacheado en memoria, ver `cached()`) y filtra por categoría acá mismo
-// en el servidor — no existe un endpoint upstream que filtre este mismo
+// Cachea el resultado YA transformado (907 productos deduplicados), no solo
+// las 8289 filas crudas. Sin esto, toProducts() (parseo de precios + dedup)
+// se repetía en CADA request del catálogo dentro de la ventana de caché.
+async function getCatalogProducts(accountNum?: string): Promise<MercasaVipResult<Product[]>> {
+  return cached(`catalog-products:${accountNum ?? 'anon'}`, async () => {
+    const result = await getInventoryItemsFMCM(accountNum)
+    if (!result.ok) return result
+    return { ok: true, data: toProducts(result.data) }
+  })
+}
+
+// Punto único que usa la ruta /api/productos. Trae el catálogo ya
+// transformado (cacheado, ver getCatalogProducts) y filtra por categoría acá
+// mismo en el servidor — no existe un endpoint upstream que filtre este mismo
 // dataset por Hierarchy1, así que el "filtrado server-side" es este, hecho en
 // el BFF antes de mandar la respuesta al navegador (nunca se manda el
 // catálogo completo al cliente, solo lo que pide /api/productos).
@@ -201,12 +212,12 @@ export async function getCatalog(options: {
 } = {}): Promise<MercasaVipResult<Product[]>> {
   const { category, accountNum } = options
 
-  const result = await getInventoryItemsFMCM(accountNum)
+  const result = await getCatalogProducts(accountNum)
   if (!result.ok) return result
 
-  const products = toProducts(result.data)
   return {
     ok: true,
-    data: category ? products.filter((p) => p.category === category) : products,
+    data: category ? result.data.filter((p) => p.category === category) : result.data,
   }
 }
+
