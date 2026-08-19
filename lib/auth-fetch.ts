@@ -25,7 +25,11 @@ export async function fetchProtected(path: string, init: RequestInit = {}): Prom
   const doFetch = (token: string | undefined) =>
     fetch(url, {
       ...init,
-      headers: { ...init.headers, Authorization: `Bearer ${token ?? ''}` },
+      headers: {
+        ...init.headers,
+        Authorization: `Bearer ${token ?? ''}`,
+        'X-Api-Key': process.env.MERCASAVIP_API_KEY ?? '',
+      },
       cache: 'no-store',
     })
 

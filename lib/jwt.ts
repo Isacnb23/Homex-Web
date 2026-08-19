@@ -19,15 +19,29 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-// Claims reales del access token (ver ClaimTypes en AuthenticationController):
-// nameid = AccountNum, unique_name = CustomerName, email = email, jti = id del token.
+// Claims reales del access token: JwtService.GenerateTokens usa los
+// ClaimTypes "clásicos" de .NET (System.Security.Claims.ClaimTypes), que al
+// serializarse a JWT quedan como las URIs completas de los esquemas
+// xmlsoap/ws-2005, NO las versiones cortas ("nameid"/"unique_name"/"email")
+// que usan otras librerías. Confirmado con un token real:
+//   .../identity/claims/nameidentifier  -> AccountNum
+//   .../identity/claims/name            -> CustomerName
+//   .../identity/claims/emailaddress    -> email
+const CLAIM_ACCOUNT_NUM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+const CLAIM_NAME = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
+const CLAIM_EMAIL = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'
+
 export function getUserFromAccessToken(token: string): AuthUser | null {
   const claims = decodeJwtPayload(token)
   if (!claims) return null
 
-  return {
-    accountNum: String(claims.nameid ?? ''),
-    name: String(claims.unique_name ?? ''),
-    email: String(claims.email ?? ''),
-  }
+  const accountNum = String(claims[CLAIM_ACCOUNT_NUM] ?? '')
+  const name = String(claims[CLAIM_NAME] ?? '')
+  const email = String(claims[CLAIM_EMAIL] ?? '')
+
+  // Sin accountNum no hay usuario válido (es la clave que usamos para
+  // AccountNum en el catálogo/carrito/pedidos).
+  if (!accountNum) return null
+
+  return { accountNum, name, email }
 }

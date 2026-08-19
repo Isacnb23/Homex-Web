@@ -10,7 +10,7 @@ import type {
 const API_BASE = process.env.MERCASAVIP_API_BASE
 
 // HomeX Express es AppId 2 en MercasaVIP.Api (AppId 1 es la app de MercasaVIP).
-const APP_ID = 2
+export const APP_ID = 2
 
 export type AuthResult<T> =
   | { ok: true; data: T }
@@ -23,6 +23,30 @@ function assertApiBase(): string {
     )
   }
   return API_BASE
+}
+
+// La cédula/VATNUM en AX (ARCustTable) se guarda con guiones: X-XXXX-XXXX
+// (física, 9 dígitos) o formatos similares para jurídica/DIMEX. La API la
+// busca tal cual está en ese formato — si se manda sin guiones, GetCustomerInfo
+// no encuentra el cliente y login_HE revienta con NullReference (bug real de
+// la API, no validación nuestra: no hay try/catch ahí). Normalizamos acá para
+// que el usuario pueda escribir la cédula con o sin guiones y funcione igual.
+export function normalizeId(rawId: string): string {
+  const digits = rawId.replace(/\D/g, '') // solo dígitos
+
+  // Física (9 dígitos): 1-2345-6789
+  if (digits.length === 9) {
+    return `${digits.slice(0, 1)}-${digits.slice(1, 5)}-${digits.slice(5, 9)}`
+  }
+
+  // Jurídica (10 dígitos): 3-101-123456
+  if (digits.length === 10) {
+    return `${digits.slice(0, 1)}-${digits.slice(1, 4)}-${digits.slice(4, 10)}`
+  }
+
+  // Formato no reconocido (DIMEX u otro): devolvemos tal cual vino, sin
+  // inventar guiones que podrían quedar mal puestos.
+  return rawId.trim()
 }
 
 function mapTokens(raw: LoginResponseRaw): AuthTokens {
@@ -38,7 +62,7 @@ export async function login(
   try {
     const base = assertApiBase()
     const url = new URL('/Authentication/login_HE', base)
-    url.searchParams.set('Id', credentials.id)
+    url.searchParams.set('Id', normalizeId(credentials.id))
     // ⚠️ La contraseña viaja en la query string — así está expuesto el
     // endpoint real, no es una elección nuestra. Este fetch corre siempre
     // server-to-server desde el BFF, nunca desde el navegador del cliente,
@@ -78,7 +102,7 @@ export async function register(
   try {
     const base = assertApiBase()
     const url = new URL('/Authentication/UserRegisterHE', base)
-    url.searchParams.set('Id', data.id)
+    url.searchParams.set('Id', normalizeId(data.id))
     url.searchParams.set('password', data.password)
 
     const res = await apiFetch(url, { method: 'GET' })
@@ -115,7 +139,7 @@ export async function refresh(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        CustomerId: customerId,
+        CustomerId: normalizeId(customerId),
         RefreshToken: refreshToken,
         AppId: APP_ID,
       }),
