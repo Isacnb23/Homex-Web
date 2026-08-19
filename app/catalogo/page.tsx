@@ -10,7 +10,7 @@ import CategoryCard from '@/components/CategoryCard'
 import ProductCard from '@/components/ProductCard'
 import ProductCardSkeleton from '@/components/ProductCardSkeleton'
 import { sampleCategories, sampleProducts } from '@/lib/sampleData'
-import { useDebouncedValue } from '@/lib/utils'
+import { useDebouncedValue } from '@/lib/hooks'
 import type { Category, Product, ProductSort, ProductsResponse } from '@/lib/types'
 
 const ALL_CATEGORIES = ''

@@ -221,3 +221,19 @@ export async function getCatalog(options: {
   }
 }
 
+// Busca un producto puntual por id dentro del catálogo ya cacheado (no pega
+// de nuevo a MercasaVIP: reusa getCatalogProducts, que ya trae los 907
+// productos transformados). Usado por /api/productos/[id] para el detalle.
+  export async function getProductById(
+  id: string,
+  accountNum?: string
+): Promise<MercasaVipResult<Product | null>> {
+  const result = await getCatalogProducts(accountNum)
+  if (!result.ok) return result
+
+  const product = result.data.find((p) => p.id === id) ?? null
+  return { ok: true, data: product }
+}
+
+
+
