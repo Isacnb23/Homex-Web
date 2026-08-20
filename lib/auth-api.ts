@@ -12,6 +12,10 @@ const API_BASE = process.env.MERCASAVIP_API_BASE
 // HomeX Express es AppId 2 en MercasaVIP.Api (AppId 1 es la app de MercasaVIP).
 export const APP_ID = 2
 
+// "fmcm" = HomeX Express en AX (vs "cmer" para Mercasa). Confirmado en el
+// análisis del sistema de alta de clientes.
+export const DATA_AREA_ID = 'fmcm'
+
 export type AuthResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; error: string }

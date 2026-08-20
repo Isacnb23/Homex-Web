@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendor files servidos tal cual (copiados de maplibre-gl/dist para el
+    // fix del worker de tiles vectoriales bajo Turbopack, ver BranchesMap.tsx).
+    "public/maplibre-gl-worker.mjs",
+    "public/maplibre-gl-shared.mjs",
   ]),
 ]);
 

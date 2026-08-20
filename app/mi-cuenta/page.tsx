@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import DirectionForm from '@/components/DirectionForm'
 import { useAuthStore } from '@/lib/authStore'
 
 export default function MiCuentaPage() {
@@ -43,14 +44,23 @@ export default function MiCuentaPage() {
               Cargando tu sesión…
             </div>
           ) : isAuthenticated && user ? (
-            <div className="mt-8 rounded-2xl bg-homex-surface p-6 shadow-card">
-              {/* Datos leídos de los claims del JWT (nameid/unique_name/email), ver lib/jwt.ts */}
-              <p className="text-sm text-homex-text/60">Nombre</p>
-              <p className="text-lg font-semibold text-homex-blue">{user.name || '—'}</p>
-              <p className="mt-4 text-sm text-homex-text/60">Email</p>
-              <p className="text-lg font-semibold text-homex-blue">{user.email || '—'}</p>
-              <p className="mt-4 text-sm text-homex-text/60">Identificación</p>
-              <p className="text-lg font-semibold text-homex-blue">{user.accountNum || '—'}</p>
+            <>
+              <div className="mt-8 rounded-2xl bg-homex-surface p-6 shadow-card">
+                <p className="text-sm text-homex-text/60">Nombre</p>
+                <p className="text-lg font-semibold text-homex-blue">{user.name || '—'}</p>
+                <p className="mt-4 text-sm text-homex-text/60">Email</p>
+                <p className="text-lg font-semibold text-homex-blue">{user.email || '—'}</p>
+                <p className="mt-4 text-sm text-homex-text/60">Identificación</p>
+                <p className="text-lg font-semibold text-homex-blue">{user.accountNum || '—'}</p>
+              </div>
+
+              <div className="mt-8 rounded-2xl bg-homex-surface p-6 shadow-card">
+                <h2 className="text-lg font-bold text-homex-blue">Dirección de entrega</h2>
+                <p className="mt-1 text-sm text-homex-text/60">
+                  Guardá tu dirección para agilizar tus próximas compras.
+                </p>
+                <DirectionForm />
+              </div>
 
               <button
                 type="button"
@@ -59,7 +69,7 @@ export default function MiCuentaPage() {
               >
                 Cerrar sesión
               </button>
-            </div>
+            </>
           ) : (
             <div className="mt-8 rounded-2xl border border-homex-yellow bg-homex-yellow/10 p-4 text-sm text-homex-blue-dark">
               No pudimos confirmar tu sesión.{' '}

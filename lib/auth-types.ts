@@ -34,3 +34,17 @@ export interface SessionState {
   isAuthenticated: boolean
   isLoading: boolean
 }
+
+
+export interface DirectionInput {
+  fullName: string
+  province: string
+  canton: string
+  city: string
+  district: string
+  street: string
+  address: string
+  postalName: string
+  latitude?: string
+  longitude?: string
+}
