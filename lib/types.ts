@@ -32,8 +32,32 @@ export interface Product {
   unit: string // UnitId
   category: string // Hierarchy1
   inPromo: boolean // InPromo === 1
+  discountPercent: number | null // % real de descuento activo (TYPE=0), null si no aplica
   imageUrl: string | null // pendiente: resolver con Luis
   site: string // SiteName
+}
+
+// GET_PROMO_RESULTS_HE: una fila por ítem/familia beneficiado dentro de una
+// promo. Ver diagnostics/PROMO_CODES_MAPPING.md (repo mercasavip.api) para el
+// mapeo completo de estos códigos.
+export interface HE_PromoResultRaw {
+  RecId: number
+  PromoId: string
+  Type: number // 0=% descuento regular, 1=bonificación, 2=% por cliente/lista específica
+  SubType: number // (bajo Type=0) 100=ítem puntual, 101=familia de texto, 108=bonificación 100%
+  SubTypeValue: string // ItemId cuando SubType=100/108; texto de familia cuando SubType=101
+  QtyType: number // 1=cantidad de unidades, 2=porcentaje
+  QtyValue: number // el % o la cantidad, según QtyType
+  How: number
+}
+
+// GET_PROMO_HEADERS_HE + condiciones/resultados anidados (HE_GetPromosByAddress)
+export interface HE_PromoRaw {
+  PromoId: string
+  Name: string
+  Description: string
+  Times: number
+  PromoResults: HE_PromoResultRaw[]
 }
 
 // HE_GetFamilies devuelve un array de strings (nombres de familia), no objetos.

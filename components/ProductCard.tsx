@@ -38,12 +38,17 @@ export default function ProductCard({ product }: { product: Product }) {
           ) : (
             <ImageOff className="h-8 w-8 text-homex-text/30" aria-hidden="true" />
           )}
-          {product.inPromo && (
+          {product.discountPercent ? (
+            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-homex-yellow px-2.5 py-1 text-[10px] font-semibold text-homex-blue-dark">
+              <Tag className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
+              -{Math.round(product.discountPercent)}%
+            </span>
+          ) : product.inPromo ? (
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-homex-yellow px-2.5 py-1 text-[10px] font-semibold text-homex-blue-dark">
               <Tag className="h-3 w-3" strokeWidth={2.5} aria-hidden="true" />
               Promo
             </span>
-          )}
+          ) : null}
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-4 pb-0">

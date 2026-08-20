@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   let productos = result.data
 
   if (onlyPromo) {
-    productos = productos.filter((p) => p.inPromo)
+    productos = productos.filter((p) => p.inPromo || p.discountPercent !== null)
   }
 
   if (search) {

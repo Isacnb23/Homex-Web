@@ -37,12 +37,17 @@ export default async function ProductPage({
       <div className="grid gap-8 sm:grid-cols-2">
         <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-homex-yellow/60 bg-homex-surface">
           <ProductImage imageUrl={product.imageUrl} name={product.name} />
-          {product.inPromo && (
+          {product.discountPercent ? (
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-homex-yellow px-3 py-1.5 text-xs font-semibold text-homex-blue-dark">
+              <Tag className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
+              -{Math.round(product.discountPercent)}% de descuento
+            </span>
+          ) : product.inPromo ? (
             <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-homex-yellow px-3 py-1.5 text-xs font-semibold text-homex-blue-dark">
               <Tag className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden="true" />
               Promo
             </span>
-          )}
+          ) : null}
         </div>
 
         <div className="flex flex-col">

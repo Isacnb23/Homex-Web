@@ -1,7 +1,8 @@
 import 'server-only'
 import { apiFetch } from './api-client'
+import { fetchProtected } from './auth-fetch'
 import { BRANCH_COORDS } from './branches-coords'
-import type { HE_FamilyRaw, HE_InventItemRaw, HE_SiteRaw, Product, Category, Branch } from './types'
+import type { HE_FamilyRaw, HE_InventItemRaw, HE_SiteRaw, HE_PromoRaw, Product, Category, Branch } from './types'
 
 const API_BASE = process.env.MERCASAVIP_API_BASE
 
@@ -130,7 +131,7 @@ export async function getInventoryItemsByFamily(
   )
 }
 
-export function toProduct(raw: HE_InventItemRaw): Product {
+export function toProduct(raw: HE_InventItemRaw, discounts?: Map<string, number>): Product {
   // El Amount viene con coma como separador decimal, ej. "1534,6500000000000000".
   const price = Number.parseFloat(raw.Amount.replace(',', '.'))
 
@@ -141,6 +142,7 @@ export function toProduct(raw: HE_InventItemRaw): Product {
     unit: raw.UnitId,
     category: raw.Hierarchy1,
     inPromo: raw.InPromo === 1,
+    discountPercent: discounts?.get(raw.ItemId) ?? null,
     // Proxeado por nuestro BFF: la imagen real vive en HTTP plano (mixed
     // content si se pide directo desde un sitio HTTPS). Ver app/api/images/[itemId].
     imageUrl: `/api/images/${encodeURIComponent(raw.ItemId)}`,
@@ -176,17 +178,84 @@ export function toBranch(raw: HE_SiteRaw): Branch {
 // sitio con stock. Nos quedamos con la primera aparición de cada ItemId.
 // TODO: cuando haya selección de sucursal, usar AddressId/InventSiteId real en
 // vez de deduplicar a ciegas.
-export function toProducts(raw: HE_InventItemRaw[]): Product[] {
+export function toProducts(raw: HE_InventItemRaw[], discounts?: Map<string, number>): Product[] {
   const seen = new Set<string>()
   const products: Product[] = []
 
   for (const item of raw) {
     if (seen.has(item.ItemId)) continue
     seen.add(item.ItemId)
-    products.push(toProduct(item))
+    products.push(toProduct(item, discounts))
   }
 
   return products
+}
+
+// HE_GetPromosByAddress es [Authorize] (a diferencia del resto de este
+// archivo), así que solo tiene sentido pedirlo cuando hay un accountNum real
+// (usuario logueado). AddressId='-1': mismo hueco que el resto del archivo (no
+// hay selección de dirección real todavía) — pero acá SÍ importa más que en
+// los otros endpoints: GET_PROMO_HEADERS_HE exige que ADDRESS matchee EXACTO
+// una fila real de PROMOBYADDRESS para esa cuenta, así que con '-1' es
+// esperable no traer nada hasta que exista selección de dirección real (ver
+// diagnostics/PROMO_CODES_MAPPING.md en mercasavip.api).
+async function getPromosByAddress(
+  accountNum: string,
+  addressId = '-1'
+): Promise<MercasaVipResult<HE_PromoRaw[]>> {
+  return cached(`promos:${accountNum}:${addressId}`, async () => {
+    try {
+      const params = new URLSearchParams({
+        addressId,
+        priceList: PRICE_LIST,
+        accountNum,
+      })
+      const res = await fetchProtected(`/Inventory/HE_GetPromosByAddress?${params.toString()}`)
+
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: `MercasaVIP API respondió ${res.status} ${res.statusText}`,
+        }
+      }
+
+      const data = (await res.json()) as HE_PromoRaw[]
+      return { ok: true, data }
+    } catch (err) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : 'Error desconocido pidiendo promociones',
+      }
+    }
+  })
+}
+
+// Solo TYPE=0 (descuento regular por %) tiene alguna promo activa hoy — ver
+// diagnostics/PROMO_CODES_MAPPING.md en mercasavip.api. TYPE=1 (bonificación)
+// y TYPE=2 (descuento por cliente/lista específica) se ignoran a propósito
+// (ninguna promo activa los usa actualmente).
+// SUBTYPE=101 (familia de texto libre, ej. "ALOE") también se ignora: no hay
+// forma confirmada de correlacionar ese texto con Hierarchy1-5/ItemGroupId sin
+// adivinar, así que por ahora solo mapeamos SUBTYPE=100/108 (traen el ItemId
+// exacto en SubTypeValue).
+function buildDiscountMap(promos: HE_PromoRaw[]): Map<string, number> {
+  const discounts = new Map<string, number>()
+
+  for (const promo of promos) {
+    for (const result of promo.PromoResults) {
+      if (result.Type !== 0) continue
+      if (result.QtyType !== 2) continue
+      if (result.SubType !== 100 && result.SubType !== 108) continue
+
+      const itemId = result.SubTypeValue
+      const existing = discounts.get(itemId)
+      if (existing === undefined || result.QtyValue > existing) {
+        discounts.set(itemId, result.QtyValue)
+      }
+    }
+  }
+
+  return discounts
 }
 
 // Cachea el resultado YA transformado (907 productos deduplicados), no solo
@@ -196,7 +265,18 @@ async function getCatalogProducts(accountNum?: string): Promise<MercasaVipResult
   return cached(`catalog-products:${accountNum ?? 'anon'}`, async () => {
     const result = await getInventoryItemsFMCM(accountNum)
     if (!result.ok) return result
-    return { ok: true, data: toProducts(result.data) }
+
+    // Sin accountNum no hay sesión, y HE_GetPromosByAddress es [Authorize] —
+    // los usuarios anónimos quedan sin discountPercent, como hasta ahora.
+    let discounts: Map<string, number> | undefined
+    if (accountNum) {
+      const promosResult = await getPromosByAddress(accountNum)
+      if (promosResult.ok) {
+        discounts = buildDiscountMap(promosResult.data)
+      }
+    }
+
+    return { ok: true, data: toProducts(result.data, discounts) }
   })
 }
 
